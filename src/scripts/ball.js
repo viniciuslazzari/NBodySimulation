@@ -11,34 +11,38 @@ class Cell {
         this.y1 = y;
     }
 
-    draw(ctx) {
+    draw(ctx, diffWidth, diffHeight) {
         ctx.beginPath();
         ctx.fillStyle = this.color;
-        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        ctx.arc(this.x + diffWidth / 2, this.y + diffHeight / 2, this.radius, 0, 2 * Math.PI);
         ctx.fill();
     }
+}
+
+randomIntFromInterval = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 createGroup = (qtd, mass, color) => {
     const group = [];
 
     for (var i = 0; i < qtd; i++) {
-        x = Math.floor(Math.random() * 1001);
-        y = Math.floor(Math.random() * 801);
+        x = Math.floor(randomIntFromInterval(250, 750));
+        y = Math.floor(randomIntFromInterval(200, 600));
 
-        group.push(new Cell(x, y, 1, 1, mass, color, 1))
+        group.push(new Cell(x, y, 0, 0, mass, color, 5))
     }
 
     return group;
 }
 
-drawGroup = (ctx, group) => {
+drawGroup = (ctx, gainX, gainY, group) => {
     group.forEach(cell => {
-        cell.draw(ctx);
+        cell.draw(ctx, gainX, gainY);
     });
 }
 
-createForce = (ctx, group1, group2, alfa) => {
+createForce = (group1, group2, alfa) => {
     softening = 1000;
 
     for (let i = 0; i < group1.length; i++) {
@@ -78,9 +82,6 @@ createForce = (ctx, group1, group2, alfa) => {
 
         cell1.x1 -= cell1.velocityX;
         cell1.y1 -= cell1.velocityY;
-
-        // if (cell1.x1 <= 0 || cell1.x1 >= 1000) cell1.velocityX *= -1;
-        // if (cell1.y1 <= 0 || cell1.y1 >= 800) cell1.velocityY *= -1;
     }
 
     group1.forEach(cell => {
