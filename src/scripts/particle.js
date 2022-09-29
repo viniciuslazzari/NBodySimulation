@@ -1,4 +1,4 @@
-class Cell {
+class Particle {
     constructor(x, y, velocityX, velocityY, mass, color, radius) {
         this.x = x;
         this.y = y;
@@ -30,36 +30,33 @@ createGroup = (qtd, mass, color) => {
         x = Math.floor(randomIntFromInterval(250, 750));
         y = Math.floor(randomIntFromInterval(200, 600));
 
-        group.push(new Cell(x, y, 0, 0, mass, color, 5))
+        group.push(new Particle(x, y, 0, 0, mass, color, 5))
     }
 
     return group;
 }
 
-drawGroup = (ctx, gainX, gainY, group) => {
-    group.forEach(cell => {
-        cell.draw(ctx, gainX, gainY);
+drawGroup = (ctx, diffWidth, diffHeight, group) => {
+    group.forEach(particle => {
+        particle.draw(ctx, diffWidth, diffHeight);
     });
 }
 
 createForce = (group1, group2, alfa) => {
     softening = 1000;
 
-    for (let i = 0; i < group1.length; i++) {
+    group1.forEach(particle1 => {
         forceX = 0;
         forceY = 0;
 
-        for (let j = 0; j < group2.length; j++) {
-            cell1 = group1[i];
-            cell2 = group2[j];
-        
-            distanceX = cell1.x - cell2.x;
-            distanceY = cell1.y - cell2.y;
+        group2.forEach(particle2 => {
+            distanceX = particle1.x - particle2.x;
+            distanceY = particle1.y - particle2.y;
         
             distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
         
             if (distance > 0){
-                force = alfa * cell1.mass * cell2.mass / (Math.pow(distance, 2) + softening);
+                force = alfa * particle1.mass * particle2.mass / (Math.pow(distance, 2) + softening);
                 forceX += force * distanceX;
                 forceY += force * distanceY;
 
@@ -67,25 +64,25 @@ createForce = (group1, group2, alfa) => {
                 //     ctx.beginPath();
                 //     ctx.strokeStyle = 'white';
                 //     ctx.lineWidth = 0.1;
-                //     ctx.moveTo(cell1.x, cell1.y);
-                //     ctx.lineTo(cell2.x, cell2.y);
+                //     ctx.moveTo(particle1.x, particle1.y);
+                //     ctx.lineTo(particle2.x, particle2.y);
                 //     ctx.stroke();
                 // }
             }
-        }
+        })
 
-        accelerationX = forceX / cell1.mass;
-        accelerationY = forceY / cell1.mass;
+        accelerationX = forceX / particle1.mass;
+        accelerationY = forceY / particle1.mass;
 
-        cell1.velocityX += accelerationX;
-        cell1.velocityY += accelerationY;
+        particle1.velocityX += accelerationX;
+        particle1.velocityY += accelerationY;
 
-        cell1.x1 -= cell1.velocityX;
-        cell1.y1 -= cell1.velocityY;
-    }
+        particle1.x1 -= particle1.velocityX;
+        particle1.y1 -= particle1.velocityY;
+    })
 
-    group1.forEach(cell => {
-        cell.x = cell.x1;
-        cell.y = cell.y1;
+    group1.forEach(particle => {
+        particle.x = particle.x1;
+        particle.y = particle.y1;
     })
 }

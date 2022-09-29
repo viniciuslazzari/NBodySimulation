@@ -17,21 +17,28 @@ game = () => {
     let scale = 1;
     let scaleFactor = 1.1;
 
-    const reds = createGroup(500, 1, 'red');
+    let selectedParticle = null;
+    let hoverParticleMargin = 10;
+
+    let groups = [];
+
+    groups.push(createGroup(500, 1, 'red'));
 
     update = () => {
         ctx.beginPath();
         ctx.clearRect(0, 0, width, height);
         ctx.stroke();
 
-        if (selected) {
-            selected.x = mouseX;
-            selected.y = mouseY;
+        if (selectedParticle) {
+            selectedParticle.x1 = selectedParticle.x = mouseX / scale - diffWidth / 2;
+            selectedParticle.y1 = selectedParticle.y = mouseY / scale - diffHeight / 2;
         }
-        
-        drawGroup(ctx, diffWidth, diffHeight, reds);
 
-        createForce(reds, reds, 1);
+        groups.forEach(group => {
+            drawGroup(ctx, diffWidth, diffHeight, group);
+        })
+        
+        createForce(groups[0], groups[0], 0.2);
 
         requestAnimationFrame(update);
     }
@@ -39,8 +46,7 @@ game = () => {
     update();
 
     canvas.addEventListener("wheel", (e) => {
-        if (e.deltaY < 0) scale *= scaleFactor;
-        else scale /= scaleFactor;
+        scale = e.deltaY < 0 ? scale *= scaleFactor : scale /= scaleFactor;
 
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(scale, scale);
@@ -50,48 +56,49 @@ game = () => {
 
         diffWidth = width - originalWidth;
         diffHeight = height - originalHeight;
+
+        hoverParticleMargin *= scale;
     })
 
-    var selected = null;
+    canvas.addEventListener("click", () => {
+        if (selectedParticle) {
+            selectedParticle.velocityX = 0;
+            selectedParticle.velocityY = 0;
 
-    // canvas.addEventListener("click", () => {
-    //     if (!selected) {
-    //         blues.forEach(cell => {
-    //             if (cell.x + cell.radius + 10 > mouseX && cell.x - cell.radius - 10 < mouseX) {
-    //                 if (cell.y + cell.radius + 10 > mouseY && cell.y - cell.radius - 10 < mouseY) {
-    //                     selected = cell;
-    //                 }
-    //             }
-    //         });
-    //     } else {
-    //         selected.x = mouseX;
-    //         selected.y = mouseY;
-    //         selected.velocityX = 0;
-    //         selected.velocityY = 0;
+            selectedParticle = null;
+            return;
+        }
 
-    //         selected = null;
-    //     }
-    // });
+        groups.forEach(group => {
+            group.forEach(particle => {
+                if (particle.x + particle.radius + 10 > mouseX && particle.x - particle.radius - 10 < mouseX) {
+                    if (particle.y + particle.radius + 10 > mouseY && particle.y - particle.radius - 10 < mouseY) {
+                        selectedParticle = particle;
+                    }
+                }
+            })
+        })
+    });
 
-    // canvas.addEventListener("mousemove", (e) => {
-    //     mouseX = e.pageX;
-    //     mouseY = e.pageY;
+    canvas.addEventListener("mousemove", (e) => {
+        mouseX = e.pageX;
+        mouseY = e.pageY;
 
-    //     if (selected) {
-    //         document.body.style.cursor = "pointer";
-    //     } else {
-    //         var hover = false;
+        // if (selectedParticle) {
+        //     return;
+        // } 
 
-    //         blues.forEach(cell => {
-    //             if (cell.x + cell.radius > mouseX && cell.x - cell.radius < mouseX) {
-    //                 if (cell.y + cell.radius > mouseY && cell.y - cell.radius < mouseY) {
-    //                     hover = true;
-    //                 }
-    //             }
-    //         });
+        // groups.forEach(group => {
+        //     group.forEach(particle => {
+        //         if (particle.x + particle.radius + 10 > mouseX && particle.x - particle.radius - 10 < mouseX) {
+        //             if (particle.y + particle.radius + 10 > mouseY && particle.y - particle.radius - 10 < mouseY) {
+        //                 document.body.style.cursor = "pointer";
+        //                 return;
+        //             }
+        //         }
+        //     })
+        // })
 
-    //         if (hover) document.body.style.cursor = "pointer";
-    //         else document.body.style.cursor = "default";
-    //     }
-    // });
+        // document.body.style.cursor = "default";
+    });
 }
