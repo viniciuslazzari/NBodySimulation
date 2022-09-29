@@ -22,7 +22,7 @@ game = () => {
 
     let groups = [];
 
-    groups.push(createGroup(500, 1, 'red'));
+    groups.push(createGroup(100, 1, 'red'));
 
     update = () => {
         ctx.beginPath();
@@ -38,7 +38,7 @@ game = () => {
             drawGroup(ctx, diffWidth, diffHeight, group);
         })
         
-        createForce(groups[0], groups[0], 0.2);
+        createForce(groups[0], groups[0], 1);
 
         requestAnimationFrame(update);
     }
@@ -69,36 +69,45 @@ game = () => {
             return;
         }
 
-        groups.forEach(group => {
-            group.forEach(particle => {
+        for (let i = 0; i < groups.length; i++) {
+            const group = groups[i];
+            
+            for (let j = 0; j < group.length; j++) {
+                let particle = group[j];
+
                 if (particle.x + particle.radius + 10 > mouseX && particle.x - particle.radius - 10 < mouseX) {
                     if (particle.y + particle.radius + 10 > mouseY && particle.y - particle.radius - 10 < mouseY) {
                         selectedParticle = particle;
+                        return;
                     }
                 }
-            })
-        })
+            }
+        }
     });
 
     canvas.addEventListener("mousemove", (e) => {
         mouseX = e.pageX;
         mouseY = e.pageY;
 
-        // if (selectedParticle) {
-        //     return;
-        // } 
+        if (selectedParticle) {
+            return;
+        }
 
-        // groups.forEach(group => {
-        //     group.forEach(particle => {
-        //         if (particle.x + particle.radius + 10 > mouseX && particle.x - particle.radius - 10 < mouseX) {
-        //             if (particle.y + particle.radius + 10 > mouseY && particle.y - particle.radius - 10 < mouseY) {
-        //                 document.body.style.cursor = "pointer";
-        //                 return;
-        //             }
-        //         }
-        //     })
-        // })
+        for (let i = 0; i < groups.length; i++) {
+            const group = groups[i];
+            
+            for (let j = 0; j < group.length; j++) {
+                let particle = group[j];
 
-        // document.body.style.cursor = "default";
+                if (particle.x + particle.radius + 10 > mouseX && particle.x - particle.radius - 10 < mouseX) {
+                    if (particle.y + particle.radius + 10 > mouseY && particle.y - particle.radius - 10 < mouseY) {
+                        document.body.style.cursor = "pointer";
+                        return;
+                    }
+                }
+            }
+        }
+
+        document.body.style.cursor = "default";
     });
 }
