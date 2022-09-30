@@ -7,8 +7,6 @@ class Particle {
         this.mass = mass;
         this.color = color;
         this.radius = radius;
-        this.x1 = x;
-        this.y1 = y;
     }
 
     draw(ctx, diffWidth, diffHeight) {
@@ -23,12 +21,12 @@ randomIntFromInterval = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-createGroup = (qtd, mass, color) => {
+createGroup = (qtd, mass, color, width, height) => {
     const group = [];
 
     for (var i = 0; i < qtd; i++) {
-        x = Math.floor(randomIntFromInterval(250, 750));
-        y = Math.floor(randomIntFromInterval(200, 600));
+        x = Math.floor(randomIntFromInterval(1, width));
+        y = Math.floor(randomIntFromInterval(1, height));
 
         group.push(new Particle(x, y, 0, 0, mass, color, 5))
     }
@@ -42,47 +40,42 @@ drawGroup = (ctx, diffWidth, diffHeight, group) => {
     });
 }
 
+applyForce = (particle, forceX, forceY) => {
+    accelerationX = forceX / particle.mass;
+    accelerationY = forceY / particle.mass;
+
+    particle.velocityX += accelerationX;
+    particle.velocityY += accelerationY;
+}
+
 createForce = (group1, group2, alfa) => {
     softening = 1000;
 
-    group1.forEach(particle1 => {
-        forceX = 0;
-        forceY = 0;
+    for (let i = 0; i < group1.length; i++) {
+        particle1 = group1[i];
+        
+        for (let j = i + 1; j < group2.length; j++) {
+            particle2 = group2[j];
 
-        group2.forEach(particle2 => {
             distanceX = particle1.x - particle2.x;
             distanceY = particle1.y - particle2.y;
+
+            if (distanceX == 0 && distanceY == 0) continue;
         
             distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
         
-            if (distance > 0){
-                force = alfa * particle1.mass * particle2.mass / (Math.pow(distance, 2) + softening);
-                forceX += force * distanceX;
-                forceY += force * distanceY;
+            force = alfa * particle1.mass * particle2.mass / (Math.pow(distance, 2) + softening);
 
-                // if (force > 0.0001){
-                //     ctx.beginPath();
-                //     ctx.strokeStyle = 'white';
-                //     ctx.lineWidth = 0.1;
-                //     ctx.moveTo(particle1.x, particle1.y);
-                //     ctx.lineTo(particle2.x, particle2.y);
-                //     ctx.stroke();
-                // }
-            }
-        })
+            forceX = force * distanceX;
+            forceY = force * distanceY;
 
-        accelerationX = forceX / particle1.mass;
-        accelerationY = forceY / particle1.mass;
-
-        particle1.velocityX += accelerationX;
-        particle1.velocityY += accelerationY;
-
-        particle1.x1 -= particle1.velocityX;
-        particle1.y1 -= particle1.velocityY;
-    })
+            applyForce(particle1, forceX, forceY)
+            applyForce(particle2, -forceX, -forceY)
+        }
+    }
 
     group1.forEach(particle => {
-        particle.x = particle.x1;
-        particle.y = particle.y1;
+        particle.x -= particle.velocityX;
+        particle.y -= particle.velocityY;
     })
 }
